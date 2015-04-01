@@ -8,6 +8,10 @@
 		"memory",
 		"cache"
 	],
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/dprior/mongo-atm.git"
+	},
 	"author": {
 		"name": "David Prior",
 		"email": "davidprior1004@gmail.com"
@@ -16,6 +20,12 @@
 		{
 			"name": "Jesse Wise",
 			"email": "jwise7@gmail.com"
+		}
+	],
+	"licenses": [
+		{
+			"type": "MIT",
+			"url": "http://www.opensource.org/licenses/MIT"
 		}
 	],
 }
