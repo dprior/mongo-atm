@@ -28,4 +28,5 @@
 			"url": "http://www.opensource.org/licenses/MIT"
 		}
 	],
+	"main": "cache.js"
 }
