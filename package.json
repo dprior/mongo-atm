@@ -1,0 +1,21 @@
+{
+	"name": "mongo-atm",
+	"description": "Provides simple in-memory caching and (optionally) provides connection helper for MongoDB",
+	"version": "0.1.0",
+	"tags": [
+		"mongo",
+		"mongodb",
+		"memory",
+		"cache"
+	],
+	"author": {
+		"name": "David Prior",
+		"email": "davidprior1004@gmail.com"
+	},
+	"contributors": [
+		{
+			"name": "Jesse Wise",
+			"email": "jwise7@gmail.com"
+		}
+	],
+}
