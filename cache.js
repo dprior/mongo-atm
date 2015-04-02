@@ -31,6 +31,7 @@ Cache.prototype.getMongo = function(collection,searchObj,options,callback) {
 	if(typeof mongoClient === 'undefined' || mongoClient === null){
 		console.log('Error with mongo-atm: In getMongo(): No Mongo connection has been defined.')
 		callback(null);
+		return;
 	}
 	options.queryOptions = (typeof options.queryOptions === 'object') ? options.queryOptions : {};
 	options.sort = (typeof options.sort === 'object') ? options.sort : {};
