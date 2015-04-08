@@ -6,7 +6,11 @@ var Cache = module.exports = function(options){
 	this.cache = {};
 }
 Cache.prototype.getCache = function(key,callback){
-	if(typeof this.cache[key] === 'undefined'){
+	if(arguments.length === 1){
+		if(this.cache[key].expires < (new Date()))
+			return null;
+		return this.cache[key].data || null;
+	} else if(typeof this.cache[key] === 'undefined'){
 		callback(null);
 	} else if(this.cache[key].expires < (new Date())){
 		if(typeof this.cache[key].updating !== "undefined" && this.cache[key].updating === true){
@@ -62,7 +66,7 @@ Cache.prototype.getMongo = function(collection,searchObj,options,callback) {
 	});
 };
 Cache.prototype.setCache = function(key,data,ttl,callback){
-	if(arguments.length === 3){
+	if(arguments.length === 3 && typeof ttl !== 'number'){
 		callback = ttl;
 		ttl = this.ttl;
 	} else {
@@ -74,7 +78,8 @@ Cache.prototype.setCache = function(key,data,ttl,callback){
 	this.cache[key].expires = new Date(new Date().getTime() + ttl * 1000);
 	if(objSize(this.cache) > this.limit)
 		trimCache(this.cache,this.limit);
-	callback(true);
+	if(typeof callback !== 'undefined')
+		callback(data)
 }
 Cache.prototype.flush = function(){
 	this.cache = {};
