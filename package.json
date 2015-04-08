@@ -22,6 +22,15 @@
 			"email": "jwise7@gmail.com"
 		}
 	],
+	"keywords":[
+		"mongo",
+		"mongodb",
+		"memory",
+		"cache"
+	],
+	"bugs": {
+		"url": "https://github.com/dprior/mongo-atm/issues"
+	},
 	"licenses": [
 		{
 			"type": "MIT",
