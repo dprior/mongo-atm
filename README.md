@@ -40,7 +40,7 @@ myCache.getCache('foo3',function(cachedResponse){
         console.log('No cache for you!');
 });
 
-//If you're worried about latency waiting to re-caching expired items, 
+//If you're worried about latency waiting to re-cache expired items, 
 //the getCache callback can also return expired items:
 myCache.getCache('foo3',function(cachedResponse, expiredResponse){
     if(cachedResponse)
