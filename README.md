@@ -70,54 +70,77 @@ myCache.getMongo('myCollection',{firstName:"David"},function(data){ //returns an
 
 ## API
 
+**Required constructor to create an instance of mongo-atm**
+
 ```javascript
 var myCache = new Cache(options);
 ```
-Required constructor to create an instance of mongo-atm
-    * **options** is an optional settings object containing some or all of the following:
-        * **ttl** is a number setting the time to live in seconds for the instance. Defaults to 60.
-        * **limit** is a number setting the maximum number of objects kept in cache. Defaults to 600.
-        * **mongoClient** is a mongoDB instance should you want/need mongo-atm to interact with your mongo collections.
+
+  * **options** is an optional settings object containing some or all of the following:
+    * **ttl** is a number setting the time to live in seconds for the instance. Defaults to 60.
+    * **limit** is a number setting the maximum number of objects kept in cache. Defaults to 600.
+    * **mongoClient** is a mongoDB instance should you want/need mongo-atm to interact with your mongo collections.
+
+- - -
+
+**Writes to cache**
 
 ```javascript
 myCache.setCache(key, value, ttl, callback);
 ```
-Writes to cache
-    * **key** is a string that identifies your cached object. [Required]
-    * **value** is what ever you are wanting to cache. [Required]
-    * **ttl** is a number that sets a custom time to live in seconds for the cached object. [Optional]
-    * **callback** is a callback function that returns the object that was written to cache. [Optional]
+
+  * **key** is a string that identifies your cached object. [Required]
+  * **value** is what ever you are wanting to cache. [Required]
+  * **ttl** is a number that sets a custom time to live in seconds for the cached object. [Optional]
+  * **callback** is a callback function that returns the object that was written to cache. [Optional]
+
+- - -
+
+**Retrieves from cache for a given key**
 
 ```javascript
 myCache.getCache(key, callback);
 ```
-Retrieves from cache for a given key
-    * **key** is a string that identifies your cached object. [Required]
-    * **callback** is a callback function that returns two values. [Optional]
-        * **cachedResponse** is whatever was found in cache or returns null if cache was expired or missing. [Required]
-        * **expiredResponse** is returned as the second parameter if the requested cached item has expired. [Optional]
+
+  * **key** is a string that identifies your cached object. [Required]
+  * **callback** is a callback function that returns two values. [Optional]
+    * **cachedResponse** is whatever was found in cache or returns null if cache was expired or missing. [Required]
+    * **expiredResponse** is returned as the second parameter if the requested cached item has expired. [Optional]
+
+- - -
+
+**Deletes a single item from cache for a given key**
 
 ```javascript
 myCache.del(key);
 ```
-Deletes a single item from cache for a given key
-    * **key** is a string that identifies the cached object to be removed. [Required]
+
+  * **key** is a string that identifies the cached object to be removed. [Required]
+
+- - -
+
+**Deletes all items from cache**
 
 ```javascript
 myCache.flush();
 ```
-Deletes all items from cache
+
+- - -
+
+**mongoDB Helper**
 
 ```javascript
 myCache.getMongo(collection, searchObj, options, callback);
 ```
-Queries a provided mongoDB instance based on the criteria provided and automatically utilizes cache for the results. Please reference [mongoDB docs](http://docs.mongodb.org/manual/reference/method/db.collection.find/) for requirements for specific parameters
-    * **collection** is a string that identifies the mongoDB collection you wish to query. [Required]
-    * **searchObj** is the search criteria for mongoDB in the form {key: value}. [Required]
-    * **options** is an optional settings object containing some or all of the following:
-        * **mongoClient** is your mongoDB instance. It is required if it wasn't declared with the constructor. [Conditionally Required]
-        * **queryOptions** is an object used as the 3rd parameter in mongo find() function and includes options such as limit and skip in the form {limit: size, skip: page} [Optional]
-        * **sort** is the field used to sort by in the form {field: 1} [Optional]
-        * **limit** is a number setting the maximum number of results to return. Defaults to 50. [Optional]
-        * **projection** is the projection fields to include in the results in the form {field: 1} [Optional]
+
+Queries a provided mongoDB instance based on the criteria provided and automatically utilizes cache for the results. Please reference [mongoDB docs](http://docs.mongodb.org/manual/reference/method/db.collection.find/) for requirements for specific parameters.
+
+  * **collection** is a string that identifies the mongoDB collection you wish to query. [Required]
+  * **searchObj** is the search criteria for mongoDB in the form {key: value}. [Required]
+  * **options** is an optional settings object containing some or all of the following:
+    * **mongoClient** is your mongoDB instance. It is required if it wasn't declared with the constructor. [Conditionally Required]
+    * **queryOptions** is an object used as the 3rd parameter in mongo find() function and includes options such as limit and skip in the form {limit: size, skip: page} [Optional]
+    * **sort** is the field used to sort by in the form {field: 1} [Optional]
+    * **limit** is a number setting the maximum number of results to return. Defaults to 50. [Optional]
+    * **projection** is the projection fields to include in the results in the form {field: 1} [Optional]
     * **callback** is a callback function that returns the cached mongoDB results in the form of an array. [Required]
