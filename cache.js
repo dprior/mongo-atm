@@ -3,6 +3,7 @@ var Cache = module.exports = function(options){
 	this.ttl = this.options.ttl || 60; //instance ttl -- override in set function for non-standard ttl
 	this.limit = this.options.limit || 600;
 	this.mongoClient = this.options.mongoClient || null;
+	this.onMongoFail = this.options.onMongoFail || null;
 	this.cache = {};
 }
 Cache.prototype.getCache = function(key,callback){
@@ -37,29 +38,43 @@ Cache.prototype.getMongo = function(collection,searchObj,options,callback) {
 		callback(null);
 		return;
 	}
+	options.preSetFunction = (typeof options.preSetFunction === 'function') ? options.preSetFunction : function(d,c){return c(d);};
 	options.queryOptions = (typeof options.queryOptions === 'object') ? options.queryOptions : {};
 	options.sort = (typeof options.sort === 'object') ? options.sort : {};
 	options.limit = options.limit || defaultLimit;
 	options.projection = options.projection || {};
+	options.ttl = options.ttl || this.ttl;
 	var key = collection + JSON.stringify(searchObj) + JSON.stringify(options,function(k,v){
-		if(k==='mongoClient') return undefined; // not a good idea to stringify our mongo client
+		if(k==='mongoClient' || k==='preSetFunction') return undefined; // not a good idea to stringify our mongo client
 		else return v;
 	});
 	_cache.getCache(key,function(cacheResponse,oldData){
-		if(cacheResponse)
+		if(cacheResponse){
 			callback(cacheResponse);
-		else if(typeof oldData !== "undefined"){
+		}else if(typeof oldData !== "undefined"){
 			callback(oldData);
 			mongoClient.collection(collection).find(searchObj,options.projection,options.queryOptions).sort(options.sort).limit(options.limit).toArray(function(err,results){
-				_cache.setCache(key,results,function(success){
-					//NOTE: already performed callback.
-					return;
-				});
+				if(err && _cache.onMongoFail) _cache.onMongoFail(err);
+				if(typeof results !== 'undefined' && !err){ //NOTE: don't want to pollute our cache if the database is down
+					options.preSetFunction(results,function(processedResults){
+						_cache.setCache(key,processedResults,options.ttl,function(success){
+							//NOTE: already performed callback.
+							return;
+						});
+					});
+				}
 			});
 		}else{
 			mongoClient.collection(collection).find(searchObj,options.projection,options.queryOptions).sort(options.sort).limit(options.limit).toArray(function(err,results){
-				_cache.setCache(key,results,function(success){
-					callback(results);
+				if(err && _cache.onMongoFail){
+					_cache.onMongoFail(err);
+				}
+				options.preSetFunction(results,function(processedResults){
+					_cache.setCache(key,processedResults,options.ttl,function(success){
+						if(success)
+							callback(processedResults);
+						else callback([]);
+					});
 				});
 			});
 		}
@@ -87,7 +102,6 @@ Cache.prototype.flush = function(){
 Cache.prototype.del = function(key){
 	this.cache[key] = {};
 }
-
 function trimCache(obj, limit){
 	//for now this just removes the oldest item in the object. The alternative would be to convert to array, sort, 
 	//trim and convert back to object
