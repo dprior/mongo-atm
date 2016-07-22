@@ -69,13 +69,15 @@ Cache.prototype.getMongo = function(collection,searchObj,options,callback) {
 				if(err && _cache.onMongoFail){
 					_cache.onMongoFail(err);
 				}
-				options.preSetFunction(results,function(processedResults){
-					_cache.setCache(key,processedResults,options.ttl,function(success){
-						if(success)
-							callback(processedResults);
-						else callback([]);
+				if(typeof results !== 'undefined' && !err){
+					options.preSetFunction(results,function(processedResults){
+						_cache.setCache(key,processedResults,options.ttl,function(success){
+							if(success)
+								callback(processedResults);
+							else callback([]);
+						});
 					});
-				});
+				} else {callback([]);}
 			});
 		}
 	});
