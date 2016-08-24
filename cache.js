@@ -38,13 +38,20 @@ Cache.prototype.getMongo = function(collection,searchObj,options,callback) {
 		callback(null);
 		return;
 	}
+	options.altKey = (typeof options.altKey === 'undefined') ? "" : function(){
+		try{
+			return JSON.stringify(options.altKey);
+		}catch(e){
+			return options.altKey;
+		}
+	}();
 	options.preSetFunction = (typeof options.preSetFunction === 'function') ? options.preSetFunction : function(d,c){return c(d);};
 	options.queryOptions = (typeof options.queryOptions === 'object') ? options.queryOptions : {};
 	options.sort = (typeof options.sort === 'object') ? options.sort : {};
 	options.limit = options.limit || defaultLimit;
 	options.projection = options.projection || {};
 	options.ttl = options.ttl || this.ttl;
-	var key = collection + JSON.stringify(searchObj) + JSON.stringify(options,function(k,v){
+	var key = (options.altKey !== "") ? options.altKey : collection + JSON.stringify(searchObj) + JSON.stringify(options,function(k,v){
 		if(k==='mongoClient' || k==='preSetFunction') return undefined; // not a good idea to stringify our mongo client
 		else return v;
 	});
