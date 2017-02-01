@@ -5,7 +5,11 @@ var Cache = module.exports = function(options){
 	this.mongoClient = this.options.mongoClient || null;
 	this.onMongoFail = this.options.onMongoFail || null;
 	this.cache = {};
+	this.requestQueued = {};
 }
+var events = require('events');
+var emitter = new events.EventEmitter();
+
 Cache.prototype.getCache = function(key,callback){
 	if(arguments.length === 1){
 		if(this.cache[key].expires < (new Date()))
@@ -72,20 +76,29 @@ Cache.prototype.getMongo = function(collection,searchObj,options,callback) {
 				}
 			});
 		}else{
-			mongoClient.collection(collection).find(searchObj,options.projection,options.queryOptions).sort(options.sort).limit(options.limit).toArray(function(err,results){
-				if(err && _cache.onMongoFail){
-					_cache.onMongoFail(err);
-				}
-				if(typeof results !== 'undefined' && !err){
-					options.preSetFunction(results,function(processedResults){
-						_cache.setCache(key,processedResults,options.ttl,function(success){
-							if(success)
-								callback(processedResults);
-							else callback([]);
+			emitter.once('requestCompleted'+key,function(cb){ return function(data){
+				delete _cache.requestQueued[key];
+				cb(data);
+			}}(callback));
+
+			if(typeof _cache.requestQueued[key] === 'undefined'){
+				_cache.requestQueued[key]=true;
+				mongoClient.collection(collection).find(searchObj,options.projection,options.queryOptions).sort(options.sort).limit(options.limit).toArray(function(err,results){
+					if(err && _cache.onMongoFail){
+						_cache.onMongoFail(err);
+						emitter.emit('requestCompleted'+key,[]); //???
+					}
+					if(typeof results !== 'undefined' && !err){
+						options.preSetFunction(results,function(processedResults){
+							_cache.setCache(key,processedResults,options.ttl,function(success){
+								if(success)
+									emitter.emit('requestCompleted'+key,processedResults);
+								else emitter.emit('requestCompleted'+key,[]);
+							});
 						});
-					});
-				} else {callback([]);}
-			});
+					} else {emitter.emit('requestCompleted'+key,[]);}
+				});
+			}
 		}
 	});
 };
