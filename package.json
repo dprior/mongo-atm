@@ -1,7 +1,7 @@
 {
 	"name": "mongo-atm",
 	"description": "Provides simple in-memory caching and (optionally) provides connection helper for MongoDB",
-	"version": "0.2.2",
+	"version": "1.0.0",
 	"tags": [
 		"mongo",
 		"mongodb",
