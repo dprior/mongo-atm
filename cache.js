@@ -113,6 +113,7 @@ Cache.prototype.setCache = function(key,data,ttl,callback){
 	this.cache[key].data = data;
 	this.cache[key].updating = false;
 	this.cache[key].expires = new Date(new Date().getTime() + ttl * 1000);
+	freezeObj(this.cache[key].data);
 	if(objSize(this.cache) > this.limit)
 		trimCache(this.cache,this.limit);
 	if(typeof callback !== 'undefined')
@@ -141,4 +142,12 @@ var objSize = function(obj){
 	for(var key in obj)
 		if(obj.hasOwnProperty(key)) size++;
 	return size;
+}
+function freezeObj(obj){
+	var props = Object.getOwnPropertyNames(obj);
+	props.forEach(function(name){
+		if(typeof obj[name] == 'object' && obj[name] !== null)
+			freezeObj(obj[name]);
+	});
+	return Object.freeze(obj)
 }
