@@ -144,11 +144,12 @@ var objSize = function(obj){
 	return size;
 }
 function freezeObj(obj){
-	var props = Object.getOwnPropertyNames(obj);
-	props.forEach(function(name){
-		if(obj.hasOwnProperty(name) && typeof obj[name] == 'object' && obj[name] !== null && !Object.isFrozen(obj[name]))
-			freezeObj(obj[name]);
-	});
+	if(typeof obj === 'object' && obj !== null){
+		var props = Object.getOwnPropertyNames(obj);
+		props.forEach(function(name){
+			if(obj.hasOwnProperty(name) && typeof obj[name] == 'object' && obj[name] !== null && !Object.isFrozen(obj[name]))
+				freezeObj(obj[name]);
+		});
+	}
 	return obj;
-
 }
