@@ -6,11 +6,12 @@ var Cache = module.exports = function(options){
 	this.onMongoFail = this.options.onMongoFail || null;
 	this.cache = {};
 	this.requestQueued = {};
+	this.deprecated = {};
 }
 var events = require('events');
 var emitter = new events.EventEmitter();
 
-Cache.prototype.getCache = function(key,callback){
+Cache.prototype.get = function(key,callback){
 	if(arguments.length === 1){
 		if(this.cache[key].expires < (new Date()))
 			return null;
@@ -27,6 +28,14 @@ Cache.prototype.getCache = function(key,callback){
 	} else {
 		callback(this.cache[key].data);
 	}
+}
+//Legacy Support
+Cache.prototype.getCache = function(key, callback){
+	if(!this.deprecated.getCache){ //Only display deprecation warning once
+		this.deprecated.getCache = true;
+		console.log("**WARNING in mongo-atm: getCache() is deprecated, please use get() instead");
+	}
+	this.get(key, callback);
 }
 Cache.prototype.getCustom = function(key, customGetter, ttl, callback){
 	var _cache = this;
@@ -46,7 +55,7 @@ Cache.prototype.getCustom = function(key, customGetter, ttl, callback){
 		console.log('Error with mongo-atm: In getCustom(): Missing required callback function');
 		return null;
 	}
-	_cache.getCache(key, function(cacheResponse, oldData){
+	_cache.get(key, function(cacheResponse, oldData){
 		//Response was cached - pass it back
 		if(cacheResponse)
 			return callback(cacheResponse);
@@ -55,7 +64,7 @@ Cache.prototype.getCustom = function(key, customGetter, ttl, callback){
 			callback(oldData);
 			customGetter(function(newData){
 				if(typeof newData !== 'undefined' && newData !== null){
-					_cache.setCache(key, newData, ttl) //No need for callback - user has their data already
+					_cache.set(key, newData, ttl) //No need for callback - user has their data already
 				}
 			})
 		}
@@ -71,7 +80,7 @@ Cache.prototype.getCustom = function(key, customGetter, ttl, callback){
 				_cache.requestQueued[key] = true;
 				customGetter(function(newData){
 					if(typeof newData !== 'undefined' && newData !== null){
-						_cache.setCache(key,newData, ttl, function(success){
+						_cache.set(key,newData, ttl, function(success){
 							if(success)
 								emitter.emit('requestCompleted'+key,newData);
 							else
@@ -121,7 +130,7 @@ Cache.prototype.getMongo = function(collection,searchObj,options,callback) {
 	_cache.getCustom(key, mongoGetter, ttl, callback);
 	return;
 };
-Cache.prototype.setCache = function(key,data,ttl,callback){
+Cache.prototype.set = function(key,data,ttl,callback){
 	if(arguments.length === 3 && typeof ttl !== 'number'){
 		callback = ttl;
 		ttl = this.ttl;
@@ -137,6 +146,14 @@ Cache.prototype.setCache = function(key,data,ttl,callback){
 		trimCache(this.cache,this.limit);
 	if(typeof callback !== 'undefined')
 		callback(data)
+}
+//Legacy Support
+Cache.prototype.setCache = function(key, data, ttl, callback){
+	if(!this.deprecated.setCache){ //Only display deprecation warning once
+		this.deprecated.setCache = true;
+		console.log("**WARNING in mongo-atm: setCache() is deprecated, please use set() instead");
+	}
+	this.set(key, data, ttl, callback);
 }
 Cache.prototype.flush = function(){
 	this.cache = {};
