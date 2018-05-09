@@ -57,9 +57,24 @@ myCache.getCache('foo3',function(cachedResponse, expiredResponse){
     }
 });
 
+//This method implements the above function by accepting a custom getter function
+// - The custom getter receives a callback function as its argument
+// - The custom getter sends back the data to be cached through the callback function
+myCache.getCustom('foo4', myCustomGetter, function(data){
+    //Returns an empty array by default
+    if(data && typeof data.length !== 'undefined' && data.length == 0){
+        console.log("Nothing found!!");
+    }else{
+        console.log(data); //foo
+    }
+})
+function myCustomGetter(callback){
+    //Do some asynchronous processing here and pass back some data
+    callback('foo');
+}
 
-//And finally for the fun part!! The getMongo() call automates the above function
-//and queries mongoDB in one call:
+//And finally for the fun part!! The getMongo() call automates the above method by
+//creating a custom getter that handles querying mongodb for you!!
 myCache.getMongo('myCollection',{firstName:"David"},function(data){ //returns an array
     if(data.length > 0)
         console.log(data[0].firstName); //David
@@ -124,6 +139,20 @@ myCache.del(key);
 ```javascript
 myCache.flush();
 ```
+
+- - -
+
+**Custom Getter Helper**
+```javascript
+myCache.getCustom(key, customGetter, ttl, callback);
+```
+
+  * **key** is a string that identifies your cached object. [Required]
+  * **customGetter** is a custom function that meets the following requirements: [Required]
+    * **callback arugment** gets passed to your getter by the getCustom method
+    * **callback** gets called by your custom getter to send data back to get cached
+  * **ttl** is a number that sets a custom time to live in seconds for the cached object. [Optional]
+  * **callback** is a callback function that returns the object that was written to cache. [Optional]
 
 - - -
 
